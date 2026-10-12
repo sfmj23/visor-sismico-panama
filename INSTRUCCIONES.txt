@@ -1,0 +1,32 @@
+VISOR DE MONITOREO SISMICO | ESRI PANAMA
+
+ARCHIVOS (mantener juntos en una misma carpeta):
+- index.html: interfaz
+- styles.css: apariencia
+- app.js: funcionalidad
+- eventos.json: registros sismicos (311 eventos de muestra)
+- logo-esri-panama-blanco.png: logotipo institucional
+
+PARA ABRIR EN TU EQUIPO WINDOWS SIN INSTALAR PYTHON NI NODE:
+1. Extrae todo el ZIP en una carpeta.
+2. Abre PowerShell en esa carpeta (en el Explorador, clic en la barra de ruta, escribe powershell y presiona Enter).
+3. Copia esta unica linea y presiona Enter:
+
+$h=[System.Net.HttpListener]::new(); $h.Prefixes.Add('http://localhost:8085/'); $h.Start(); Write-Host 'Abre http://localhost:8085/'; while($h.IsListening){$c=$h.GetContext();try{$n=$c.Request.Url.AbsolutePath.TrimStart('/');if(!$n){$n='index.html'};if($n -notin @('index.html','styles.css','app.js','eventos.json','logo-esri-panama-blanco.png')){$c.Response.StatusCode=404}else{$f=Join-Path (Get-Location).Path $n;$b=[IO.File]::ReadAllBytes($f);$c.Response.ContentType=if($n.EndsWith('.js')){'application/javascript'}elseif($n.EndsWith('.json')){'application/json'}elseif($n.EndsWith('.css')){'text/css'}elseif($n.EndsWith('.png')){'image/png'}else{'text/html; charset=utf-8'};$c.Response.ContentLength64=$b.Length;$c.Response.OutputStream.Write($b,0,$b.Length)}}catch{$c.Response.StatusCode=500}finally{$c.Response.Close()}}
+
+4. Abre en Chrome: http://localhost:8085/
+5. Para detener el servidor, vuelve a PowerShell y pulsa Ctrl+C o cierra esa ventana.
+
+PARA ACTUALIZAR LOS EVENTOS CADA DIA:
+Reemplaza eventos.json por una lista JSON con la misma estructura de campos:
+{"x":-80.8315,"y":7.54017,"t":"2026-10-09T12:56:03-05:00","m":7.2,"d":20,"s":"REVISADO","r":"Descripcion"}
+Campos: x longitud, y latitud, t fecha/hora ISO 8601 con UTC-5, m magnitud, d profundidad en km, s estado, r descripcion.
+Mantén los registros históricos y agrega nuevos; el visor recalcula automaticamente cifras, periodo y ultima actualizacion al recargar.
+
+PARA PUBLICAR:
+Sube los cinco archivos a un alojamiento web estatico (por ejemplo GitHub Pages) sin cambiar sus nombres.
+Requiere Internet para cargar Leaflet, fuentes y teselas de mapas base Esri.
+Los datos se cargan desde el JSON local: no se consultan ni sincronizan automaticamente con el IGC-UP.
+La atribucion de las teselas Esri aparece en el mapa. Revisa las condiciones de uso correspondientes antes de publicarlo.
+
+VERSION 2: Controles de navegacion modernos (inicio, zoom, geolocalizacion), escala libre de superposiciones y mensaje trasladado al panel lateral. Geolocalizacion: requiere permiso del navegador y localhost o HTTPS.
